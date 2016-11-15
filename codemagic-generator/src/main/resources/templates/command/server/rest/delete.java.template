@@ -1,0 +1,46 @@
+package ${package};
+
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+${if requestParams}import com.google.common.base.Preconditions;${end}
+${if fullEntityClassName}import ${fullEntityClassName};${end}
+${if fullInputClassName}import ${fullInputClassName};${end}
+
+public class Template {
+
+    /**
+	 * The http delete does not allows request payload. Then, all entities ID
+	 * should be passed in the query string. But there is a limit for query
+	 * string length. Therefore, is more safe to use a put and pass all entities
+	 * (or ids) as request payload. Necessary to add some information to url to
+	 * differentiate from {@link #saveOrUpdate(String, ${EntityClassName})}. In
+	 * this case, using the suffix "/delete"
+	 * 
+	 * @param projectName
+	 *            The project whose the blacklist rules to be deleted belongs
+	 * @param input
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.PUT, value = "/delete")
+	public ResponseEntity<Void> delete(
+	      ${if requestParamsMethodDeclarations}${requestParamsMethodDeclarations},${end}
+	      final @RequestBody ${InputClassName} input) {
+	
+		  ${if requestParamsMethodDeclarations}
+		  for (final ${EntityClassName} entity : input.getEntitiesToBeDeleted()) {
+    		 ${foreach requestParams param}
+		  	 Preconditions.checkArgument( entity.${param.getter}().equals(${param.fieldName}) );		  
+		     ${end}
+    	  }
+    	  ${end}
+    	  
+         /* 
+            service.deleteInBatch(input.getEntitiesToBeDeleted()); 
+            return ResponseEntity.ok().build(); 
+         */		 
+		 throw new RuntimeException("Not implemented yet");
+		 
+	}
+}

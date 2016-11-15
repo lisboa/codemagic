@@ -1,0 +1,40 @@
+package ${package};
+
+import javax.inject.Inject;
+
+import org.gwtbootstrap3.client.ui.gwt.DataGrid;
+
+import com.google.gwt.view.client.ProvidesKey;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Widget;
+import com.gwtplatform.mvp.client.ViewWithUiHandlers;
+import ${fullTargetEntityName};
+
+class ${BaseObjectName}View extends ViewWithUiHandlers<${BaseObjectName}UiHandlers> implements ${BaseObjectName}Presenter.MyView {
+
+	private final ProvidesKey<${TargetEntityName}> keyProvider = new ProvidesKey<${TargetEntityName}>() {
+		@Override
+		public Object getKey(final ${TargetEntityName} item) {
+		    // All entity should have the method getId()
+			return item == null ? null : item.getId();
+		}
+		
+	};
+	
+	@UiField(provided = true)
+	DataGrid<${TargetEntityName}> table = new DataGrid<${TargetEntityName}>(20, keyProvider);
+	
+	interface Binder extends UiBinder<Widget, ${BaseObjectName}View> {
+    }
+
+    @Inject
+    ${BaseObjectName}View(final Binder uiBinder) {
+        initWidget(uiBinder.createAndBindUi(this));
+    }
+    
+    @Override
+    public DataGrid<${TargetEntityName}> getTable() {
+		return table;
+	}
+}

@@ -1,0 +1,42 @@
+package ${package};
+
+import codemagic.util.client.common.AppContextUtil;
+import db.assist.view.common.common.codegeneration.support.command.AbstractHasDataRestCommand;
+${if requestParamHolder.params}
+import codemagic.util.client.common.StringUtilClient;
+${end}
+import com.google.gwt.core.client.GWT;
+import com.github.nmorel.gwtjackson.client.ObjectMapper;
+import ${fullTargetEntityName};
+${if requestParamHolder.params}
+import ${fullContextClassName};
+${end}
+
+public class ${CommandName} extends AbstractHasDataRestCommand {
+
+	private final ${TargetEntityName} entity;
+
+	private static final ${TargetEntityName}Mapper MAPPER = GWT.create( ${TargetEntityName}Mapper.class );
+	
+	public static interface ${TargetEntityName}Mapper extends ObjectMapper<${TargetEntityName}> {}
+	
+
+	public ${CommandName}(final int timeoutMilliseconds, final ${TargetEntityName} entity) {
+		super(timeoutMilliseconds, buildTargetUrl(), "${httpVerb}");
+		assert entity != null : "The entity to be saved cannot be null";
+		this.entity = entity;
+	}
+
+	@Override
+	protected String inputAsJson() {
+		return MAPPER.write( entity );
+	}
+
+	private static String buildTargetUrl() {
+		${if requestParamsMethodArguments}
+		return StringUtilClient.format("%s${restUrl}", AppContextUtil.getBaseUrlForRestServices(), ${requestParamsMethodArguments}) ;
+		${else}
+		return AppContextUtil.getBaseUrlForRestServices() + "${restUrl}" ;
+		${end}
+	}
+}

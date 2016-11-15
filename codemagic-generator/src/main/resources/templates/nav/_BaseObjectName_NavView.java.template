@@ -1,0 +1,42 @@
+package ${package};
+
+import javax.inject.Inject;
+
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.user.client.ui.Widget;
+import com.gwtplatform.mvp.client.ViewWithUiHandlers;
+${if widgets}import com.google.gwt.uibinder.client.UiField;${end}
+${if clickables}import com.google.gwt.event.dom.client.ClickEvent;${end}
+${if clickables}import com.google.gwt.uibinder.client.UiHandler;${end}
+${foreach widgetFullQualifiedClassName fullClassName}import ${fullClassName};${NL}${end}
+
+class ${BaseObjectName}View extends ViewWithUiHandlers<${BaseObjectName}UiHandlers> implements ${BaseObjectName}Presenter.MyView {
+
+    ${foreach widgets widget }
+    @UiField
+    ${widget.javaType} ${widget.name.uncapitalizedName};
+    ${end}
+    
+    interface Binder extends UiBinder<Widget, ${BaseObjectName}View> {
+    }
+
+    @Inject
+    ${BaseObjectName}View(final Binder uiBinder) {
+        initWidget(uiBinder.createAndBindUi(this));
+    }
+    
+    ${foreach clickables happened}
+    @UiHandler("${happened.widget.name.uncapitalizedName}")
+    public void on${happened.widget.name.capitalizedName}Click(final ClickEvent event) {
+    	getUiHandlers().when${happened.widget.name.capitalizedName}IsClicked(event);
+    }
+    ${end}
+    
+    ${foreach widgets widget}
+    @Override
+    public ${widget.javaType} ${widget.name.getter}() {
+       return ${widget.name.uncapitalizedName};
+    }
+    ${end}
+    
+}

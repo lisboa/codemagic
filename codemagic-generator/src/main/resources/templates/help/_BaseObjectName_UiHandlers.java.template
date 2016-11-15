@@ -1,0 +1,6 @@
+package ${package};
+
+import com.gwtplatform.mvp.client.UiHandlers;
+
+interface ${BaseObjectName}UiHandlers extends UiHandlers {
+}

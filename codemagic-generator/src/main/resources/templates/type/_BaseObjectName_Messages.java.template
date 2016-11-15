@@ -1,0 +1,39 @@
+package ${package};
+
+import com.google.gwt.i18n.client.Messages;
+import db.assist.view.common.common.codegeneration.support.message.crud.ICrudMessages;
+
+public interface ${BaseObjectName}Messages extends Messages, ICrudMessages {
+	
+	  @Override
+	  @DefaultMessage("<strong>{0,number}</strong> ${itemLabels} was <strong>successful created</strong>")
+	  @AlternateMessage({
+		  "=1", "A new ${itemLabel} was <strong>successful created</strong>.",
+		  "=0", "None ${itemLabel} was created."
+	  })
+	  String created(@PluralCount int count);
+	  
+	  @Override
+	  @DefaultMessage("<strong>{0,number}</strong> ${itemLabels} was <strong>successful updated</strong>")
+	  @AlternateMessage({
+		  "=1", "The ${itemLabel} was <strong>successful updated</strong>.",
+		  "=0", "None ${itemLabel} was updated."
+	  })
+	  String updated(@PluralCount int count);
+	  
+	  @Override
+	  @DefaultMessage("<strong>{0,number}</strong> ${itemLabels} was <strong>successful deleted</strong>")
+	  @AlternateMessage({
+		  "=1", "The ${itemLabel} was <strong>successful deleted</strong>.",
+		  "=0", "None ${itemLabel} was deleted."
+	  })
+	  String deleted(@PluralCount int count);
+	  
+	  @Override
+	  @DefaultMessage("Confirm the deletion of this <strong>{0,number}</strong> ${itemLabels} ?")
+	  @AlternateMessage({
+		  "=1", "Confirm the deletion of this ${itemLabel} ?"
+	  })
+	  String confirmDeletion(@PluralCount int count);
+
+}

@@ -1,0 +1,43 @@
+package ${package};
+
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+import com.gwtplatform.mvp.client.HasUiHandlers;
+import com.gwtplatform.mvp.client.PresenterWidget;
+import com.gwtplatform.mvp.client.View;
+${if clickables}import com.google.gwt.event.dom.client.ClickEvent;${end}
+${foreach widgetFullQualifiedClassName fullClassName}import ${fullClassName};${NL}${end}
+
+public class ${BaseObjectName}Presenter extends PresenterWidget<${BaseObjectName}Presenter.MyView> implements ${BaseObjectName}UiHandlers {
+
+	@SuppressWarnings("CPD-START")
+    interface MyView extends View, HasUiHandlers<${BaseObjectName}UiHandlers> {
+    	${foreach widgets widget }
+    	${widget.javaType} ${widget.name.getter}();${NL}
+    	${end}
+    }
+
+    @Inject
+    ${BaseObjectName}Presenter(
+            final EventBus eventBus,
+            final MyView view) {
+        super(eventBus, view);
+        
+        getView().setUiHandlers(this);
+    }
+    
+    ${foreach clickables happened}
+    @Override
+    public void when${happened.widget.name.capitalizedName}IsClicked(final ClickEvent event) {
+    	final ${NavEventClassName} ev = new ${NavEventClassName}(${NavEventClassName}.WhatsHappen.${happened.happenedName});
+    	getEventBus().fireEventFromSource(ev, this);
+    }
+    ${end}
+ 
+ 	@SuppressWarnings("CPD-END")   
+    ${foreach widgets widget }
+    public ${widget.javaType} ${widget.name.getter}() {
+    	return getView().${widget.name.getter}();
+    }
+    ${end}
+}

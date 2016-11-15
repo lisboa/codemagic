@@ -1,0 +1,12 @@
+	private void hideHelp() {
+  		showOrHidHelp(null);
+	}
+	
+	private void showHelp() {
+		showOrHidHelp(helpPresenter);
+	}
+
+	private void showOrHidHelp(final ${HelpPresenter} helpPresenter) {
+		final SetMeOnHelpBlockEvent helpEv = new SetMeOnHelpBlockEvent(helpPresenter);
+		getEventBus().fireEvent(helpEv);
+	}

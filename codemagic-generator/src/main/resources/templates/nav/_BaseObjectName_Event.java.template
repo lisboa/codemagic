@@ -1,0 +1,48 @@
+package ${package};
+
+import com.google.gwt.event.shared.EventHandler;
+import com.google.gwt.event.shared.GwtEvent;
+
+public class ${BaseObjectName}Event extends GwtEvent<${BaseObjectName}Event.Handler> {
+    
+    private static Type<Handler> TYPE = new Type<Handler>();
+    
+    private final WhatsHappen happening;
+    
+    public static enum WhatsHappen {
+    	${foreach clickables happened}
+    	${happened.happenedName}${if !last_happened},${end}
+    	${end}
+    }
+    
+    public ${BaseObjectName}Event(final WhatsHappen happening) {
+    
+    	assert happening != null : "The happening cannot be null.";
+    	
+		this.happening = happening;
+	}
+    
+    public interface Handler extends EventHandler {
+        void ${handlerMethodName}(${BaseObjectName}Event event);
+    }
+    
+    
+    public static Type<Handler> getType() {
+        return TYPE;
+    }
+    
+    public WhatsHappen getHappening() {
+		return happening;
+	}
+    
+
+    @Override
+    protected void dispatch(final Handler handler) {
+        handler.on${BaseObjectName}(this);
+    }
+
+    @Override
+    public Type<Handler> getAssociatedType() {
+        return TYPE;
+    }
+}

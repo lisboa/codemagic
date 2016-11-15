@@ -1,0 +1,23 @@
+package ${package};
+
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import ${fullEntityClassName};
+
+public class Template {
+
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<Page<${EntityClassName}>> getEntities(
+			${if requestParamsMethodDeclarations}${requestParamsMethodDeclarations},${end}
+			final @RequestParam(defaultValue="0", required=false, value="page") int page,
+			final @RequestParam(defaultValue="20", required=false, value="pageSize" ) int pageSize) {
+
+		/* return ResponseEntity.ok( service.getEntities(${if requestParamsMethodArguments}${requestParamsMethodArguments},${end} new PageRequest( page, pageSize)) )*/
+		throw new RuntimeException("Not implemented yet");
+	}
+	
+}

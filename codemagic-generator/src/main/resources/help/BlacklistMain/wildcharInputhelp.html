@@ -1,0 +1,18 @@
+The rule used to block forbidden words. This rule can contain the
+wildchars asterisk (<b>*</b>) and question (?). Use asterisk to match zero or
+more characters and question to matches zero ou one.
+<p> 
+<b>Example 1:</b> The pattern
+<b>*</b>.domain.com
+blocks any text ended with
+<i>domain.com</i>
+, like
+<b>page1</b><i>.domain.com</i>
+</p>
+<p>
+<b>Example 2:</b> The pattern
+<i>ab</i><b>?</b>
+matches
+<b>ab</b> and any 3 characters begins with <i>ab</i>, like 
+<i>ab</i><b>c</b>, <i>ab</i><b>1</b>, etc.
+</p>

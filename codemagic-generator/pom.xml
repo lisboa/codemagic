@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>codemagic-generator</artifactId>
+	<description>Utilities for code generation</description>
+
+	<parent>
+		<groupId>codemagic</groupId>
+		<artifactId>codemagic</artifactId>
+		<version>1.0.0</version>
+	</parent>
+
+	<properties>
+		<gwtp.version>1.4</gwtp.version>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.github.javaparser</groupId>
+			<artifactId>javaparser-core</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+
+		<!-- Necessary to generate code -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>codemagic</groupId>
+			<artifactId>codemagic-util-shared</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- Template engine -->
+		<dependency>
+			<groupId>com.floreysoft</groupId>
+			<artifactId>jmte</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+
+		<!-- Processing xml files -->
+		<!-- Ref.: https://github.com/hunterhacker/jdom/wiki/JDOM2-A-Primer -->
+		<dependency>
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom2</artifactId>
+			<version>2.0.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom2</artifactId>
+			<classifier>sources</classifier>
+			<version>2.0.6</version>
+		</dependency>
+
+		<!-- ImmutableMap -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>db.assist</groupId>
+			<artifactId>db-assist-shared</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-cypher-compiler-1.9</artifactId>
+			<version>2.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.attoparser</groupId>
+			<artifactId>attoparser</artifactId>
+			<version>1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.9.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-cypher-compiler-2.1</artifactId>
+			<version>2.1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-integration</artifactId>
+			<version>1.2.5.RELEASE</version>
+		</dependency>
+	</dependencies>
+</project>

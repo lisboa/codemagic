@@ -1,0 +1,17 @@
+package ${package};
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("${springRestUrl}")
+public class ${ServiceClassName} {
+
+	/* private final MyService service; */
+
+	// @Autowired
+	public ${ServiceClassName}(/* final MyService service */) {
+	
+		/* this.service = service; */
+	}
+}

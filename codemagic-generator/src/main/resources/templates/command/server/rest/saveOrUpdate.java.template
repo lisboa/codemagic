@@ -1,0 +1,24 @@
+package template;
+
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.http.ResponseEntity;
+import ${fullEntityClassName};
+${if requestParams}import com.google.common.base.Preconditions;${end}
+
+public class Template {
+
+	@RequestMapping(method = RequestMethod.PUT)
+	public ResponseEntity<${EntityClassName}> saveOrUpdate(
+			${if requestParamsMethodDeclarations}${requestParamsMethodDeclarations},${end}
+			final @RequestBody ${EntityClassName} entity) {
+
+    		${foreach requestParams param}
+		  	Preconditions.checkArgument( entity.${param.getter}().equals(${param.fieldName}) );		  
+		    ${end}
+
+			//-> return ResponseEntity.ok( service.saveOrUpdate(entity) );
+			throw new RuntimeException("Not implemented yet");
+	}
+}

@@ -1,0 +1,36 @@
+<H4>Introduction</H4>
+Before a script is saved in the project, the dbassist checks if some of
+rules defined here appear in the script. if true, the script cannot be
+saved.
+<H4>Wildchars</H4>
+The rule can contain the wildchars:
+<strong>asterisk</strong>
+("*") and
+<strong>questions</strong>
+("?"). The asterisk matches zero or more characters, while the question
+matches zero or one. For example, the rule
+<em>'t?mp'</em>
+matches
+<em>'temp'</em>
+and
+<em>'tmp'</em>
+. The rule
+<em>'t*mp'</em>
+matches
+<em>'temp'</em>
+and
+<em>'teemp'</em>
+, and so on.
+
+<H4>Rules fields</H4>
+<p>
+	Each rule has an <strong>id</strong> that uniquely identifies it, a <strong>rule</strong>
+	that specify the forbidden words, a <strong>message</strong> that show
+	a useful message to user, explaining why the words was blocked, a <strong>flag</strong>
+	to indicate if the rules is active or not and a list of <strong>environments</strong>
+	where this rules should be applied. Some words should be blocked in
+	specific environment. For example, in an e-commerce site, possibly the
+	word 'test' can not appear in the HLG neither PRD environments.
+	Therefore, the blacklist pattern 'test' should apply only for this two
+	environments.
+</p>

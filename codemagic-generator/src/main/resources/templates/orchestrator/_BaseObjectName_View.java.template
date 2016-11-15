@@ -1,0 +1,79 @@
+package ${package};
+
+import org.gwtbootstrap3.client.ui.Heading;
+import com.google.inject.Inject;
+import codemagic.util.client.common.SlotUtil;
+import com.google.gwt.user.client.ui.IsWidget;
+import org.gwtbootstrap3.client.ui.Row;
+import org.gwtbootstrap3.client.ui.Column;
+import org.gwtbootstrap3.client.ui.gwt.HTMLPanel;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Widget;
+import com.gwtplatform.mvp.client.ViewWithUiHandlers;
+
+class ${BaseObjectName}View extends
+		ViewWithUiHandlers<${BaseObjectName}UiHandlers> implements
+		${BaseObjectName}Presenter.MyView {
+	
+	@UiField Row formArea;
+	@UiField HTMLPanel formContainer;
+	@UiField Column tableContainer;
+	@UiField Column toolbarContainer;
+	@UiField Row gridArea;
+	@UiField Heading displayTitle;
+	
+    interface Binder extends UiBinder<Widget, ${BaseObjectName}View> {
+    }
+
+    @Inject
+    ${BaseObjectName}View(final Binder uiBinder) {
+        initWidget(uiBinder.createAndBindUi(this));
+    }
+
+ 	@Override
+    public void setInSlot(final Object slot, final IsWidget content) {
+    	if (slot == ${OrchestratorPresenter}.SLOT_FormContent) {
+    		SlotUtil.setIfNotExists( getFormContainer(), content, "${OrchestratorPresenter}.SLOT_FormContent");
+    		
+    	} else if (slot == ${OrchestratorPresenter}.SLOT_TableContent) {
+    		SlotUtil.setIfNotExists( getTableContainer(), content, "${OrchestratorPresenter}.SLOT_TableContent" );
+    		
+    	} else if (slot == ${OrchestratorPresenter}.SLOT_ToolbarContent) {
+    		SlotUtil.setIfNotExists( getToolbarContainer(), content, "${OrchestratorPresenter}.SLOT_ToolbarContent" );
+    		
+    	} else {
+    		super.setInSlot(slot, content);
+    	}
+    }
+ 
+    @Override
+	public HTMLPanel getFormContainer() {
+		return formContainer;
+	}
+
+    @Override
+	public Column getTableContainer() {
+		return tableContainer;
+	}
+
+    @Override
+	public Column getToolbarContainer() {
+		return toolbarContainer;
+	}
+	
+	@Override
+	public Row getFormArea() {
+		return formArea;
+	}
+	
+	@Override
+	public Row getGridArea() {
+		return gridArea;
+	}
+	
+	@Override
+	public Heading getDisplayTitle() {
+		return displayTitle;
+	}
+ }

@@ -1,0 +1,557 @@
+package ${package};
+
+import org.gwtbootstrap3.extras.bootbox.client.Bootbox;
+import org.gwtbootstrap3.extras.bootbox.client.callback.ConfirmCallback;
+import ${fullMessagesClassName};
+import db.assist.view.common.common.codegeneration.support.message.notify.NotifyMessage.MessageType;
+import com.google.gwt.core.client.GWT;
+import db.assist.view.common.common.codegeneration.support.message.crud.CrudMessagesDriver;
+import db.assist.view.common.common.codegeneration.support.message.crud.ICrudMessages;
+import db.assist.view.common.common.codegeneration.support.message.MessageHolder;
+import db.assist.view.common.common.codegeneration.support.grid.event.GridDataRefreshFinishedEvent;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import org.gwtbootstrap3.client.ui.Heading;
+import db.assist.view.common.common.codegeneration.support.grid.toolbar.driver.GridToolbarDriver;
+import codemagic.widget.client.common.util.WidgetUtil;
+import org.gwtbootstrap3.client.ui.Button;
+import db.assist.view.client.application.applayout.events.AddMeOnNavBarEvent;
+${if targetSlotName}
+import ${fullNameOfTargetPresenter};
+${end}
+${if nameToken}
+import com.gwtplatform.mvp.client.annotations.NameToken;
+${end}
+import db.assist.view.common.common.codegeneration.support.event.GridSelectionEvent;
+import codemagic.util.client.common.StringUtilClient;
+${if requestParamHolder.params}import static codemagic.util.shared.common.SanitizerUtil.sanitize;${end}
+${if DisplayPresenter}
+import static com.google.gwt.query.client.GQuery.$;
+import com.google.gwt.query.client.GQuery;
+import com.google.common.base.Preconditions;
+import java.util.logging.Logger;
+import db.assist.view.common.common.codegeneration.support.event.FormEvent;
+import ${fullTargetEntityName};
+${end}
+import com.google.gwt.query.client.Promise;
+import com.google.gwt.query.client.Function;
+import com.google.gwt.event.shared.GwtEvent.Type;
+import org.gwtbootstrap3.client.ui.Row;
+import org.gwtbootstrap3.client.ui.Column;
+import org.gwtbootstrap3.client.ui.gwt.HTMLPanel;
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+import com.gwtplatform.mvp.client.HasUiHandlers;
+import com.gwtplatform.mvp.client.Presenter;
+import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
+import com.gwtplatform.mvp.client.proxy.ProxyPlace;
+import com.gwtplatform.mvp.client.View;
+import com.gwtplatform.mvp.client.annotations.ContentSlot;
+import com.gwtplatform.mvp.client.proxy.RevealContentHandler;
+import db.assist.view.common.common.codegeneration.support.event.GridEvent;
+import codemagic.util.client.common.AppContextUtil;
+import com.gwtplatform.mvp.shared.proxy.PlaceRequest;
+import db.assist.view.common.common.codegeneration.support.event.FormEvent.ModeType;
+${if fullDisplayPresenter}import ${fullDisplayPresenter};${end}
+import ${fullTablePresenter};
+${if fullSaveCommandClass}import ${fullSaveCommandClass};${end}
+import ${fullStateClassName};
+import ${fullContextClassName};
+import ${fullInputClassName};
+import ${fullDeleteCommandName};
+import ${fullNavPresenterClassName};
+import ${fullNavEventClassName};
+${if configureBreadcrumbCode}import db.assist.view.common.common.codegeneration.support.util.SupportUtil;${end} 
+${foreach navImports navImport}import ${navImport};${NL}${end}
+
+@SuppressWarnings("PMD.GodClass")
+public class ${BaseObjectName}Presenter extends
+		Presenter<${BaseObjectName}Presenter.MyView, ${BaseObjectName}Presenter.MyProxy> implements
+		${BaseObjectName}UiHandlers, 
+		GridEvent.GridHandler, 
+		${if DisplayPresenter}FormEvent.Handler<${TargetEntityName}>,${end}
+		GridSelectionEvent.Handler,
+		${NavEventClassName}.Handler,
+		GridDataRefreshFinishedEvent.Handler {
+	
+	${if DisplayPresenter}
+	private static final Logger LOGGER = Logger.getLogger( ${BaseObjectName}Presenter.class.getName() );
+	${end}
+	
+	@ContentSlot
+    public static final Type<RevealContentHandler<?>> SLOT_FormContent = new Type<RevealContentHandler<?>>();
+	
+	@ContentSlot
+    public static final Type<RevealContentHandler<?>> SLOT_TableContent = new Type<RevealContentHandler<?>>();
+    
+    @ContentSlot
+    public static final Type<RevealContentHandler<?>> SLOT_ToolbarContent = new Type<RevealContentHandler<?>>();
+    
+    ${if DisplayPresenter}
+	@Inject
+	private ${DisplayPresenter} displayPresenter;
+	${end}
+	
+	private final ${TablePresenter} tablePresenter;
+	
+	private final GridToolbarDriver gridToolbarDriver;
+	
+	@Inject
+	private ${NavPresenterClassName} nav;
+
+	// Centralizes the messages that should be showed to the user.
+	private final CrudMessagesDriver messagesDriver;
+	
+	${foreach navDecls navDecl}
+	${navDecl};
+	${end}	
+	
+	${if DisplayPresenter}
+	private final GQuery $formArea;
+	${end}
+	
+	private final ScheduledCommand deferredRefreshGrid = new ScheduledCommand() {
+		@Override
+		public void execute() {
+			refreshGrid();
+		}
+	};
+	
+	private final ConfirmCallback confirmDeletionCallback = new ConfirmCallback() {
+
+		@Override
+		public void callback(final boolean result) {
+			if (result) {
+				deleteSelectedEntities(tablePresenter.getGridToolbar().getBtnDelete());
+			}
+		}
+	};
+	
+	interface MyView extends View, HasUiHandlers<${BaseObjectName}UiHandlers> {
+		HTMLPanel getFormContainer();
+		Column getTableContainer();
+		Column getToolbarContainer();
+		Row getFormArea();
+		Row getGridArea();
+		Heading getDisplayTitle();
+	}
+
+    ${if nameToken}
+	@NameToken("${nameToken}")${end}
+    @ProxyCodeSplit
+    interface MyProxy extends ProxyPlace<${BaseObjectName}Presenter> {
+    }
+    
+    @SuppressWarnings("CPD-START")
+	@Inject
+	${BaseObjectName}Presenter(final EventBus eventBus, final MyView view, final MyProxy proxy, final ${TablePresenter} tablePresenter${if hasHelp}, final ${HelpPresenter} helpPresenter${end} ) {
+	    ${if targetSlotName}
+		super(eventBus, view, proxy, ${targetSlotName});
+		${else}
+		super(eventBus, view, proxy);
+		${end}
+
+		getView().setUiHandlers(this);
+		
+		this.tablePresenter = tablePresenter;
+		
+		this.gridToolbarDriver = new GridToolbarDriver(tablePresenter);
+		
+		${if hasHelp}
+		this.helpDriver = new HelpDirver(eventBus, helpPresenter);
+		${end}
+		
+		messagesDriver = new CrudMessagesDriver( (ICrudMessages) GWT.create(${MessagesClassName}.class),  new MessageHolder() );
+				
+		${if DisplayPresenter}
+		$formArea = $(getView().getFormArea());
+		${end}
+	}
+	
+	@Override
+	protected void onBind() {
+		super.onBind();
+		
+		${if DisplayPresenter}
+		registerHandler( getEventBus().addHandlerToSource( FormEvent.getType(), displayPresenter, this) );
+		${end}
+		
+		registerHandler(getEventBus().addHandlerToSource(GridSelectionEvent.getType(), tablePresenter, this));
+		
+		registerHandler( getEventBus().addHandlerToSource(GridEvent.getType(), tablePresenter.getGridToolbar(), this) );
+		
+		registerHandler(getEventBus().addHandlerToSource(${NavEventClassName}.getType(), nav, this));
+		
+		registerHandler(getEventBus().addHandlerToSource(GridDataRefreshFinishedEvent.getType(), tablePresenter, this));
+		
+	}
+
+    ${if requestParamHolder.params}	
+	/**
+	 * <ol>
+	 * <li>Get the url parameters from request. These parameters have the form \${paramName}</li>
+	 * <li>Create a new {@link ${StateClassName}} to keep this parameters</li>
+	 * <li>Add the new state to a {@link ${ContextClassName}}, to be used by any
+	 * ${baseNameForGeneratedArtifacts} parts. With this context, the state can be easily shared
+	 * between layers without to add the State explicitly in the method
+	 * signatures, because the contexts are static objects</li>
+	 * </ol>
+	 * 
+	 * The State can be read using the example code bellow:
+	 
+	 * <code>
+	 *  ${foreach contextUrlParamList.contextParams p}${if first_p}
+	 *	String ${p.param.fieldName} = ${p.contextGetterField};
+	 *  ${end}${end}
+	 * </code>
+	 * 
+	 */
+	${end} 
+	@Override
+	public void prepareFromRequest(final PlaceRequest request) {
+	
+		super.prepareFromRequest(request);
+		
+		${foreach requestParamHolder.params p}
+		final String ${p.param.fieldName} = sanitize( request.getParameter("${p.param.fieldName}", "") ).trim();
+		${end}
+		
+		${if requestParamHolder.params}
+		final ${StateClassName} state = new ${StateClassName}(${requestParamHolder.fieldMethodArgument}, getEventBus(), tablePresenter);
+		${else}
+		final ${StateClassName} state = new ${StateClassName}(getEventBus(), tablePresenter);
+		${end}
+		 
+		${ContextClassName}.set(state);
+		
+		${configureBreadcrumbCode}
+		
+		gridToolbarDriver.configureToolbar();
+	}
+
+	@Override
+	protected void onReset() {
+		super.onReset();
+		
+		// Fire an RevealContent event to AppLayoutPresenter to add the nav in
+		// the top of screen.
+		getEventBus().fireEvent(new AddMeOnNavBarEvent(nav));
+		
+		${if DisplayPresenter}
+		setInSlot(SLOT_FormContent, displayPresenter);
+		${end}
+		setInSlot(SLOT_TableContent, tablePresenter);
+		setInSlot(SLOT_ToolbarContent, tablePresenter.getGridToolbar().asPresenter());
+		refreshThenShowTheGrid();
+	}
+	
+	private void refreshThenShowTheGrid() {
+		Scheduler.get().scheduleDeferred(deferredRefreshGrid);
+	}
+
+	@Override
+	protected void onHide() {
+		super.onHide();
+		tablePresenter.getSelectionModel().clear();
+		hideTheGridInstantly();
+		${if hasHelp}helpDriver.hideHelp();${end}
+		${if DisplayPresenter}hideTheFormInstantly();${end}
+	}
+
+	${if DisplayPresenter}
+	@Override	
+	public void onFormButton(final FormEvent<${TargetEntityName}> event) {
+		
+		switch (event.getClickedButtonType()) {
+		${if SaveCommandClass}
+		case BTN_APPLY:
+			saveEntity(event, displayPresenter.getBtnApply());
+			break;
+		
+		case BTN_SAVE:
+			saveEntity(event, displayPresenter.getBtnSave());
+			break;
+		${else}
+		// Note: The BTN_APPLY and BTN_SAVE cases are not generated. 
+	    // You should call the method beginCommand().setContextId("save") to generate them.
+        ${end}
+		case BTN_CANCEL:
+			hideTheFormSmoothly();
+			break;
+			
+		default:
+			break;
+		}
+	}
+	${end}
+	
+	@Override
+	public void onGridButton(final GridEvent event) {
+		
+		switch (event.getClickedComponent()) {
+		case BTN_ADD:
+			${if DisplayPresenter}
+			showFormInNewMode();
+			${end}
+			break;
+
+		case BTN_EDIT:
+			${if DisplayPresenter}
+			showFormInEditMode();
+			${end}
+			break;
+			
+		case BTN_DELETE:
+			deleteSelectedEntitiesConfirmBefore();
+			break;
+			
+		default:
+			break;
+		}
+	}
+
+	private void deleteSelectedEntitiesConfirmBefore() {
+		final int nEntitiesToBeDeleted = tablePresenter.getSelectedRows().size();
+		Bootbox.confirm( messagesDriver.setCount(nEntitiesToBeDeleted).confirmDeletionMsg(), confirmDeletionCallback);
+	}
+	
+	@SuppressWarnings("CPD-END")
+	private void deleteSelectedEntities(final Button clickedButton) {
+	
+		// Signals to the user that the operation is started
+		WidgetUtil.changeToLoadingState(clickedButton);
+	
+		final ${InputClassName} entitiesToBeDeleted = new ${InputClassName}( tablePresenter.getSelectedRows() );
+		final Promise promise = new ${DeleteCommandName}(AppContextUtil.getTimeoutInMilliseconds(),  entitiesToBeDeleted).execute();
+	
+		promise.fail(new Function(){
+			@Override
+			public void f() {
+			    // Signals to the user that the operation has finished
+			   	// Note: The error log and user error message already treated by the promise.
+				WidgetUtil.changeToNormalState(clickedButton);
+			}
+		});
+	
+		promise.done(new Function(){
+			
+			@Override
+			public void f() {
+				WidgetUtil.changeToNormalState(clickedButton); // Signals to the user that the operation has finished
+				queueDeleteMessage(entitiesToBeDeleted); //Configure the message to show the number of deleted entities
+				refreshGrid();
+			}
+			
+			private void queueDeleteMessage(final ${InputClassName} entitiesToBeDeleted) {
+				final int nDeletedEntities = entitiesToBeDeleted.getEntitiesToBeDeleted().size();
+				messagesDriver.setCount(nDeletedEntities).update(ModeType.DELETE, MessageType.SUCCESS);
+			}
+		});
+	}
+	
+	@Override
+	public void onGridSelection(final GridSelectionEvent event) {
+		gridToolbarDriver.configureToolbar();
+	}
+
+	
+	  //~~~~~~~~~~~~//
+	 // Utilities  //
+	//~~~~~~~~~~~~//
+
+	/**
+	 * Note: When the datagrid refresh is finished, a
+	 * {@link GridDataRefreshFinishedEvent} is fired. Then, the grid is set
+	 * to visible and the gridtoolbar is updated.
+	 */
+	private void refreshGrid() {
+		tablePresenter.getSelectionModel().clear(); // clear all selections
+		tablePresenter.refresh(); // Update the data showed in the grid
+	}
+	
+	${if SaveCommandClass}${if DisplayPresenter}
+	/**
+	 * 
+	 * @param event
+	 *            The {@link FormEvent} with event details, like the entity to
+	 *            be saved/edited
+	 * @param clickedButton
+	 *            The button clicked.
+	 */
+	@SuppressWarnings("CPD-START") 
+	private void saveEntity(final FormEvent<${TargetEntityName}> event, final Button clickedButton) {
+	
+		if ( !displayPresenter.validateDisplay() ) {
+			return;
+		}
+		
+	   	// Signals to the user that the operation has started
+		WidgetUtil.changeToLoadingState(clickedButton);
+		
+		// Get the entity and sent it to the server 
+		final ${TargetEntityName} entity = event.getEntity();
+		final Promise promise = new ${SaveCommandClass}(AppContextUtil.getTimeoutInMilliseconds(), entity).execute();
+		
+		// In case of error, go back to normal state.
+		// Note: The promise already treat the error: log and show a 
+		// message to the user. Here, only go back to normal state is necessary.
+		promise.fail(new Function(){
+			@Override
+			public void f() {
+			   WidgetUtil.changeToNormalState(clickedButton);
+			}
+		});
+
+		// In case of success, update the user interface.		
+		promise.done(new Function(){
+			@Override
+			public void f() {
+			
+				WidgetUtil.changeToNormalState(clickedButton);
+				messagesDriver.inc().update( event.getModeType(), MessageType.SUCCESS);
+				
+				// Prepare for the next input (Note: Apply button is for repetitive inputs)
+				if (FormEvent.ClickedComponent.BTN_APPLY == event.getClickedButtonType()) {
+					prepareDisplayForTheNextInput();
+					
+				// Close the form (Note: Save buttons is for one input only)	
+				} else if (FormEvent.ClickedComponent.BTN_SAVE == event.getClickedButtonType()) {
+					hideTheFormSmoothly();
+					
+				} else {
+					LOGGER.warning( StringUtilClient.format("I don't understand the event %s", event.getClickedButtonType()) );
+				}
+			}
+		});
+	}
+	
+	
+	private void prepareDisplayForTheNextInput() {
+		displayPresenter.resetDisplay();
+		displayPresenter.setEntity(newEntity());
+		displayPresenter.focusDisplay();
+	}
+	
+	@SuppressWarnings("CPD-END")
+	private ${TargetEntityName} newEntity() {
+		final ${TargetEntityName} entity = new ${TargetEntityName}();
+		${foreach contextUrlParamList.contextParams p}
+		entity.${p.param.setterFieldPath}(${p.contextGetterField});
+		${end}
+		return entity;
+	}
+	
+	private void showFormInNewMode() {
+		displayPresenter.setEntity(newEntity()).setModeType(ModeType.NEW);
+		getView().getDisplayTitle().setText("${displayNewModeTitle}");
+		showForm();
+	}
+	
+	@SuppressWarnings("CPD-START")
+	private void showFormInEditMode() {
+		checkCanEnteringEditMode();
+		
+		displayPresenter.setEntity( tablePresenter.getSelectedRows().iterator().next()  ).setModeType(ModeType.EDIT);
+		
+		getView().getDisplayTitle().setText("${displayEditingModeTitle}");
+		
+		showForm();
+	}
+
+	private void checkCanEnteringEditMode() {
+		final int numberOfSelectedRows = tablePresenter.getSelectedRows().size();
+		Preconditions.checkArgument( numberOfSelectedRows == 1, "The form cannot enter in edit mode, because there are %s selected rows, but should be 1", numberOfSelectedRows);
+	}
+	
+	/**
+	 * <pre>
+	 * 1. When form is show, the grid toolbar is hide
+	 * 2. The form use opacity transition. Therefore, the initial opacity should be 0 (see beginStagte)
+	 * </pre>
+	 */
+	private void showForm() {
+		hideTheGridInstantly();
+		
+		$formArea.animate("opacity:1", new Function(){
+			@Override
+			public void f() {
+				displayPresenter.focusDisplay();
+			}
+			
+		});
+	}	
+	
+	/**
+	 * Hide the form using a transition.
+	 */
+	private void hideTheFormSmoothly() {
+		$formArea.animate("opacity:0", new Function() {
+			@Override
+			public void f() {
+				hideForm();
+				refreshThenShowTheGrid();
+			}
+		});
+	}
+	
+	/**
+	 * <pre>
+	 * Hide the form instantly, without transition. This is used when navigate to out of the page. 
+	 * </pre>
+	 */
+	private void hideTheFormInstantly() {
+		$formArea.css("opacity","0");
+		hideForm();
+	}
+	
+   /**
+	* Common code between {@link #hideTheFormInstantly()} and
+	* {@link #hideTheFormSmoothly()}
+	*/
+	protected void hideForm() {
+		getView().getFormArea().setVisible(false);
+		displayPresenter.resetDisplay();
+		tablePresenter.getTable().redraw(); //Prevents flick: Sometime, the grid is showed in the bottom and moved to the top
+	}
+	${end}${end}
+	
+	private void showGridInstantly() {
+		gridToolbarDriver.configureToolbar();
+		getView().getGridArea().setVisible(true);
+	}
+	
+	private void hideTheGridInstantly() {
+		getView().getGridArea().setVisible(false);
+	}
+	
+	/**
+	 * Process the {@link ${NavEventClassName}} events.
+	 */
+	@SuppressWarnings("CPD-END") 
+	@Override
+	public void ${navEventHandlerMethodName}(final ${NavEventClassName} event) {
+	
+		switch (event.getHappening()) {
+		${foreach navClickables happened}
+		case ${happened.happenedName}:
+			 ${happened.actionCode}
+			 break;
+		${end}	 
+		default:
+			break;
+		}	
+	}
+	
+	${foreach navMethodDecls method}
+	${method}
+	${end}
+	
+	@Override
+	public void onDataRefreshFinish(final GridDataRefreshFinishedEvent event) {
+		showGridInstantly();
+		if (messagesDriver.hasMessage()) {
+			messagesDriver.showHereThenClear();
+		}
+		
+	}
+}

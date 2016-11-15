@@ -1,0 +1,23 @@
+package ${package};
+
+import db.assist.view.common.common.codegeneration.support.command.AbstractRestCommand;
+import codemagic.util.client.common.AppContextUtil;
+import codemagic.util.client.common.StringUtilClient;
+${if requestParamHolder.params}
+import ${fullContextClassName};
+${end}
+
+public class ${CommandName} extends AbstractRestCommand{
+
+	public ${CommandName}( final int start, final int pageSize ) {
+		super(AppContextUtil.getTimeoutInMilliseconds(), buildTargetUrl(start, pageSize), "${httpVerb}");		 
+	}
+
+	private static String buildTargetUrl(final int start, final int pageSize) {
+		${if requestParamsMethodArguments}
+		return StringUtilClient.format( "%s${restUrl}?page=%s&pageSize=%s", AppContextUtil.getBaseUrlForRestServices(), ${requestParamsMethodArguments}, String.valueOf(start), String.valueOf(pageSize) );
+		${else}
+		return StringUtilClient.format( "%s${restUrl}?page=%s&pageSize=%s", AppContextUtil.getBaseUrlForRestServices(), String.valueOf(start), String.valueOf(pageSize) );
+		${end}
+	}	
+}

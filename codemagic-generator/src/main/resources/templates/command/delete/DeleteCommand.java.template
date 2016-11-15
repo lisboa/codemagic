@@ -1,0 +1,44 @@
+package ${package};
+
+import db.assist.view.common.common.codegeneration.support.command.AbstractDeleteRestCommand;
+${if requestParamHolder.params}
+import codemagic.util.client.common.StringUtilClient;
+${end}
+import codemagic.util.client.common.AppContextUtil;
+import com.google.gwt.core.client.GWT;
+import com.github.nmorel.gwtjackson.client.ObjectMapper;
+import ${fullInputClassName};
+${if requestParamHolder.params}
+import ${fullContextClassName};
+${end}
+
+public class ${CommandName} extends AbstractDeleteRestCommand {
+
+	private final ${InputClassName} input;
+
+	private static final ${InputClassName}Mapper MAPPER = GWT.create( ${InputClassName}Mapper.class );
+	
+	public static interface ${InputClassName}Mapper extends ObjectMapper<${InputClassName}> {}
+	
+
+	public ${CommandName}(final int timeoutMilliseconds, final ${InputClassName} input) {
+		super(timeoutMilliseconds, buildTargetUrl(), "${httpVerb}");
+		
+		AbstractDeleteRestCommand.validateInput(input, this);
+		
+		this.input = input;
+	}
+	
+	@Override
+	protected String inputAsJson() {
+		return MAPPER.write( input );
+	}
+
+	private static String buildTargetUrl() {
+		${if requestParamsMethodArguments}
+		return StringUtilClient.format("%s${restUrl}", AppContextUtil.getBaseUrlForRestServices(), ${requestParamsMethodArguments}) ;
+		${else}
+		return AppContextUtil.getBaseUrlForRestServices() + "${restUrl}" ;
+		${end}
+	}
+}

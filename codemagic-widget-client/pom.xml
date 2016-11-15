@@ -1,0 +1,136 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>codemagic</groupId>
+		<artifactId>codemagic</artifactId>
+		<version>1.0.0</version>
+	</parent>
+	<artifactId>codemagic-widget-client</artifactId>
+	<description>Generic GWT components</description>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.github.nmorel.gwtjackson</groupId>
+			<artifactId>gwt-jackson</artifactId>
+			<version>${gwt-jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.nmorel.gwtjackson</groupId>
+			<artifactId>gwt-jackson-guava</artifactId>
+			<version>${gwt-jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- ImmutableList, Preconditions, Verify -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava-gwt</artifactId>
+		</dependency>
+
+		<!-- Improved select component -->
+		<dependency>
+			<groupId>com.arcbees</groupId>
+			<artifactId>gwtchosen</artifactId>
+			<version>${gwtchosen.version}</version>
+		</dependency>
+
+		<!-- Bootstrap 3.3.5 -->
+		<dependency>
+			<groupId>org.gwtbootstrap3</groupId>
+			<artifactId>gwtbootstrap3</artifactId>
+			<version>${gwtbootstrap3.version}</version>
+		</dependency>
+
+		<!-- Sanitizer -->
+		<dependency>
+			<groupId>codemagic</groupId>
+			<artifactId>codemagic-util-client</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- Sanitizer -->
+		<dependency>
+			<groupId>codemagic</groupId>
+			<artifactId>codemagic-util-shared</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- Manipulate DOM like JQuery, ajax promises -->
+		<dependency>
+			<groupId>com.googlecode.gwtquery</groupId>
+			<artifactId>gwtquery</artifactId>
+			<version>${gwtquery.version}</version>
+		</dependency>
+
+		<!-- Google Web Toolkit -->
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<version>${gwt.version}</version>
+		</dependency>
+
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<!-- Copy GWT modules, uibinder files and java sources -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+					<include>**/*.java</include>
+				</includes>
+			</resource>
+			<!-- Copy any files from default resources folder -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>gwt-maven-plugin</artifactId>
+				<version>${gwt.version}</version>
+				<executions>
+					<execution>
+						<id>gwt-compile</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<module>codemagic.widget.client.Module</module>
+							<strict>true</strict>
+							<validateOnly>true</validateOnly>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+        <repositories>
+             <repository>
+                <id>dbassist.io</id>
+                <url>http://dbassist.ddns.net:8081/nexus/content/groups/public/</url>
+             </repository>
+        </repositories>
+        <pluginRepositories>
+             <pluginRepository>
+                <id>dbassist.io</id>
+                <url>http://dbassist.ddns.net:8081/nexus/content/groups/public/</url>
+             </pluginRepository>
+        </pluginRepositories>
+</project>

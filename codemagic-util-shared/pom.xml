@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>codemagic-util-shared</artifactId>
+	<description>Utilities for the prevention of NPE</description>
+
+	<parent>
+		<groupId>codemagic</groupId>
+		<artifactId>codemagic</artifactId>
+		<version>1.0.0</version>
+	</parent>
+
+	<properties>
+		<gwt-jackson.version>0.12.0</gwt-jackson.version>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>gwt-maven-plugin</artifactId>
+				<version>${gwt.version}</version>
+				<executions>
+					<execution>
+						<id>gwt-compile</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<module>codemagic.util.shared.Module</module>
+							<strict>true</strict>
+							<validateOnly>true</validateOnly>
+							<extraJvmArgs>-Xss4096K -Xmx1024M</extraJvmArgs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>com.github.nmorel.gwtjackson</groupId>
+			<artifactId>gwt-jackson</artifactId>
+			<version>${gwt-jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.nmorel.gwtjackson</groupId>
+			<artifactId>gwt-jackson-guava</artifactId>
+			<version>${gwt-jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- ImmutableMap -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava-gwt</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

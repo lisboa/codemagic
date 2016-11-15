@@ -1,0 +1,224 @@
+package ${package};
+
+import db.assist.view.common.common.codegeneration.support.grid.event.GridDataRefreshFinishedEvent;
+import ${fullContextClassName};
+import com.google.gwt.view.client.DefaultSelectionEventManager;
+import com.google.gwt.cell.client.CheckboxCell;
+import com.google.gwt.user.cellview.client.Column;
+import db.assist.view.common.common.util.DBassistExceptionUtil;
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.view.client.HasData;
+import com.google.gwt.view.client.Range;
+import codemagic.util.client.common.StringUtilClient;
+import com.google.gwt.user.cellview.client.SimplePager;
+import org.gwtbootstrap3.client.ui.gwt.DataGrid;
+import com.google.gwt.view.client.AsyncDataProvider;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.query.client.Function;
+import com.google.gwt.query.client.Promise;
+import codemagic.util.client.common.ResponseUtil;
+import com.github.nmorel.gwtjackson.client.ObjectReader;
+import com.google.gwt.user.cellview.client.TextColumn;
+import codemagic.util.client.common.AppContextUtil;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.view.client.MultiSelectionModel;
+import ${fullGetCommandName};
+import ${fullTargetEntityName};
+import ${fullTargetResultName};
+import com.google.gwt.user.client.ui.HTML;
+
+public class ${BaseObjectName}Driver implements db.assist.view.common.common.contract.HasData<${BaseObjectName}Driver> { //NOPMD
+
+	private State state = State.INITIAL;
+	private MyDataProvider dataProvider;
+	private final SimplePager pager;
+	private final DataGrid<${TargetEntityName}> table;
+	private final MultiSelectionModel<${TargetEntityName}> selectionModel;
+	
+	private static final I${TargetResultName}Reader READER = GWT.create(I${TargetResultName}Reader.class);
+	
+	public static interface I${TargetResultName}Reader extends ObjectReader<${TargetResultName}>{}
+	
+	public static enum State {
+		INITIAL,
+		STARTING,
+		STARTED
+	}
+	
+	public ${BaseObjectName}Driver(final SimplePager pager,
+			final DataGrid<${TargetEntityName}> table) {
+		
+		assert table != null : "The datagrid cannot be null";
+		assert pager != null : "The pager cannot be null";
+		
+		this.pager = pager;
+		this.table = table;
+		
+		// This selectionModel will listen for checkbox events
+    	this.selectionModel = new MultiSelectionModel<${TargetEntityName}>(table.getKeyProvider());
+		table.setSelectionModel( this.selectionModel, DefaultSelectionEventManager.<${TargetEntityName}> createCheckboxManager());
+	}
+	
+	@Override
+	public ${BaseObjectName}Driver init() {
+		if ( State.INITIAL == state) {
+			state = State.STARTING;
+			initialize();
+			GWT.log( StringUtilClient.format2("[%s] is successful initialized.", ${BaseObjectName}Driver.class.getName()));			
+		} else {
+			GWT.log( StringUtilClient.format2("[%s] is already initialized. Nothing to do", ${BaseObjectName}Driver.class.getName()));
+		}
+		
+		return this;
+	}
+
+	/**
+	 * Fire a RangeChangeEvent to force the datagrid to do a refresh and in
+	 * consequence, call the method onRangeChanged, responsible by call the
+	 * rest server to get the fresh data.
+	 */
+	@Override
+	public ${BaseObjectName}Driver refresh() {
+		if (State.STARTED == state) {
+			GWT.log(StringUtilClient.format2("[%s] refresh called", ${BaseObjectName}Driver.class.getName()));
+			table.setVisibleRangeAndClearData(new Range(0, table.getPageSize()), true);
+		} else {
+			GWT.log(StringUtilClient.format2("[%s] Skiping refresh, because in '%s' state. Changing it to '%s' ", ${BaseObjectName}Driver.class.getName(), state, State.STARTED));
+			state = State.STARTED;
+		}
+		
+		return this;
+	}
+	
+	public MultiSelectionModel<${TargetEntityName}> getSelectionModel() {
+		return selectionModel;
+	}
+	
+	public DataGrid<${TargetEntityName}> getDisplay() {
+		return table;
+	}
+
+	public MyDataProvider getDataProvider() {
+          return dataProvider;
+	}
+	
+	@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+	private void initialize() { //NOPMD
+
+		final Column<${TargetEntityName}, Boolean> checkColumn = new Column<${TargetEntityName}, Boolean>(new CheckboxCell(true, false)) {
+			@Override
+			public Boolean getValue(final ${TargetEntityName} entity) {
+				return selectionModel.isSelected(entity);
+			}
+		};
+		
+	${foreach gridFields field}
+    	final TextColumn<${TargetEntityName}> ${field.fieldName}Column = new TextColumn<${TargetEntityName}>() {
+			@Override
+			public String getValue(final ${TargetEntityName} entity) {
+				if (entity == null) { return ""; }
+			${if field.fieldType.javaType=String}
+				return entity.${field.getterFieldPath}();
+			${else}
+				return String.valueOf(entity.${field.getterFieldPath}());
+			${end}		
+			}
+		};
+    ${end}
+    
+    	table.setEmptyTableWidget(new HTML("<br/>There is no records"));
+    
+        table.addColumn(checkColumn, ""); 
+		table.setColumnWidth(checkColumn, "${checkColumProperty.columnWidth}");
+		checkColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		checkColumn.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+    	${foreach gridFields field}
+		table.addColumn(${field.fieldName}Column, "${field.title}");  
+		${if field.columnWidth}table.setColumnWidth(${field.fieldName}Column, "${field.columnWidth}");${end}
+		${end}
+
+		// pagination
+		pager.setDisplay(table);
+			
+	    // Data Provider
+		dataProvider = new MyDataProvider(pager, AppContextUtil.getTimeoutInMilliseconds());
+		dataProvider.addDataDisplay(table);
+	}
+	
+	
+	// Get remote data and update the table
+	public static class MyDataProvider extends AsyncDataProvider<${TargetEntityName}> {
+
+		private final SimplePager pager;
+		private final int timeoutInMilliseconds;
+
+		public MyDataProvider( final SimplePager pager, final int timeoutInMilliseconds ) {
+			this.pager = pager;
+			this.timeoutInMilliseconds = timeoutInMilliseconds;
+		}
+
+		@Override
+		@SuppressWarnings("CPD-START")
+		protected void onRangeChanged(final HasData<${TargetEntityName}> display) {
+			GWT.log(StringUtilClient.wrap("BEGIN: onRangeChanged"));
+
+			// Call the script services 
+			final Range range = display.getVisibleRange();
+			
+			final ${GetCommandName} ${getCommandName} = new ${GetCommandName}(timeoutInMilliseconds, pager.getPage(), range.getLength());
+			
+			final Promise promise =  ${getCommandName}.execute();
+
+			GWT.log( StringUtilClient.wrap("BEGIN: Calling the script services"));
+			
+			promise.done(new Function() {
+			
+				@Override
+				public void f() {
+					GWT.log(StringUtilClient.format2("getPage: %s, getPageCount: %s, getPageSize: %s, getPageStart: %s", pager.getPage(), pager.getPageCount(), pager.getPageSize(), pager.getPageStart()));
+					
+					final String responseJson = ResponseUtil.successAsJsonStr(getArgument(0, 0));
+					
+					final ${TargetResultName} result = READER.read(responseJson);
+					
+					updateRowData(range.getStart(), result.getContent());
+					
+					updateRowCount( (int) result.getTotalElements(), true);
+					
+					fireGridRefreshEvent();
+					
+					GWT.log( StringUtilClient.wrap("END: Calling the script services."));
+					
+					GWT.log( StringUtilClient.wrap("END: onRangeChanged"));		
+				}
+			}).fail(new Function(){
+			
+				@Override
+				public void f() {
+				
+				    display.setRowCount(0); // Prevents the grid to starving 
+				
+					fireGridRefreshEvent();
+				
+					final RequestException exception = (RequestException) getArgument(0,4);
+					
+					DBassistExceptionUtil.showHere(exception, StringUtilClient.format("[ERROR] Calling the service '%s'.", ${getCommandName}.getTargetUrl()));
+				}
+			});
+		}
+		
+		
+		/**
+		 * Signal that the refresh is finished: others parts of the app can, for
+		 * example, Update the grid toolbar, turn the grid visible (only after
+		 * the refresh have ended to prevents a flick)
+		 */
+		@SuppressWarnings("CPD-END")
+		private void fireGridRefreshEvent() {
+			${ContextClassName}.get().getEventBus().fireEventFromSource( new GridDataRefreshFinishedEvent(), ${ContextClassName}.get().getEventSource()  );
+		}
+	}
+	
+	 
+}

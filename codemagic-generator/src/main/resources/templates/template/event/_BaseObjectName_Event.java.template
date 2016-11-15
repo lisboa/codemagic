@@ -1,0 +1,27 @@
+package ${package};
+
+import com.google.gwt.event.shared.EventHandler;
+import com.google.gwt.event.shared.GwtEvent;
+
+public class ${BaseObjectName}Event extends GwtEvent<${BaseObjectName}Event.${BaseObjectName}Handler> {
+    private static Type<${BaseObjectName}Handler> TYPE = new Type<${BaseObjectName}Handler>();
+    
+    public interface ${BaseObjectName}Handler extends EventHandler {
+        void on${BaseObjectName}(${BaseObjectName}Event event);
+    }
+    
+    
+    public static Type<${BaseObjectName}Handler> getType() {
+        return TYPE;
+    }
+
+    @Override
+    protected void dispatch(final ${BaseObjectName}Handler handler) {
+        handler.on${BaseObjectName}(this);
+    }
+
+    @Override
+    public Type<${BaseObjectName}Handler> getAssociatedType() {
+        return TYPE;
+    }
+}

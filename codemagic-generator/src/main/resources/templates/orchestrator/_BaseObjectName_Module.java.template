@@ -1,0 +1,11 @@
+package ${package};
+
+import com.gwtplatform.mvp.client.gin.AbstractPresenterModule;
+${if helpModule}import ${fullHelpModule};${end}
+public class ${BaseObjectName}Module extends AbstractPresenterModule {
+    @Override
+    protected void configure() {
+         bindPresenter(${BaseObjectName}Presenter.class, ${BaseObjectName}Presenter.MyView.class, ${BaseObjectName}View.class, ${BaseObjectName}Presenter.MyProxy.class);
+         ${if helpModule}install( new ${helpModule}() );${end}
+    }
+}

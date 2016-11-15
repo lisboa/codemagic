@@ -1,0 +1,223 @@
+package ${package};
+
+${foreach displayImports import}
+import ${import};
+${end}
+${if moreFields}
+import org.gwtbootstrap3.client.ui.Anchor;
+import org.gwtbootstrap3.client.ui.constants.IconType;
+${end}
+import java.util.logging.Logger;
+import com.google.common.base.Optional;
+import codemagic.util.client.common.StringUtilClient;
+import com.google.common.base.Preconditions;
+import db.assist.view.common.common.codegeneration.support.event.FormEvent;
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.Form;
+import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
+import com.gwtplatform.mvp.client.PresenterWidget;
+import com.gwtplatform.mvp.client.View;
+import com.gwtplatform.mvp.client.HasUiHandlers;
+import db.assist.view.common.common.contract.IsDisplay;
+import com.google.gwt.event.dom.client.ClickEvent;
+import ${fullTargetEntityName};
+
+public class ${BaseObjectName}Presenter extends PresenterWidget<${BaseObjectName}Presenter.MyView> 
+implements ${BaseObjectName}UiHandlers, IsDisplay<${TargetEntityName}> {
+
+	private static final Logger LOGGER = Logger.getLogger( ${BaseObjectName}Presenter.class.getName() );
+
+	private FormEvent.ModeType modeType = FormEvent.ModeType.NEW;
+
+	private final ViewFacade viewFacade;
+	
+	private Optional<${TargetEntityName}> currentEntity = Optional.absent();
+		
+    interface MyView extends View , HasUiHandlers<${BaseObjectName}UiHandlers> {
+    ${foreach displayFields field}
+	    ${field.componentType.javaType} ${field.getterComponent}();
+	${end}
+	    ${FormType} get${FormName}();
+	    
+	    Button getBtnApply();
+	    
+	    Button getBtnSave();
+
+		Button getBtnCancel();
+		
+		${if moreFields}
+		Anchor getMoreOptionsAnchor();
+		${end}
+    }
+    
+    @Inject
+    ${BaseObjectName}Presenter(
+            final EventBus eventBus,
+            final MyView view) {
+        super(eventBus, view);
+        
+        getView().setUiHandlers(this);
+        
+        viewFacade = new ViewFacade(getView());
+    }
+    
+     @Override
+	public PresenterWidget<?> getPresenterWidget() {
+		return this;
+	}
+
+	@Override
+	public void focusDisplay() {
+	   getView().get${focusedField.capitalizedCompName}().setFocus(true);
+	}
+
+	@Override
+	public IsDisplay<${TargetEntityName}> resetDisplay() {
+	  ${foreach displayFields field}${if field.componentType.resetMethod} 
+	    getView().get${field.capitalizedCompName}().${field.componentType.resetMethod};   
+	  ${end}${end}
+	  	getView().get${FormName}().reset();
+		return this;
+	}
+
+	@Override
+	public boolean validateDisplay() {
+		return getView().get${FormName}().validate();
+	}
+	
+	@Override
+	public FormEvent.ModeType getModeType() {
+		return modeType;
+	}
+
+	@Override
+	@SuppressWarnings("CPD-START")
+	public IsDisplay<${TargetEntityName}> setModeType(final FormEvent.ModeType modeType) {
+		Preconditions.checkArgument( modeType != null ,  "mode type cannot be null." );
+		
+		this.modeType = modeType;
+		
+		if (modeType == FormEvent.ModeType.NEW) {
+		   getView().getBtnApply().setVisible (true );
+		} else if (modeType == FormEvent.ModeType.EDIT) {
+		   getView().getBtnApply().setVisible( false );
+		} else {
+		   LOGGER.warning( StringUtilClient.format(" The modeType %s is unknown ", modeType) );	
+		}
+		
+		return this;
+	}
+	
+	public Button getBtnApply() {
+		return getView().getBtnApply();
+	}
+	
+    public Button getBtnSave() {
+    	return getView().getBtnSave();
+    }
+
+	public Button getBtnCancel() {
+		return getView().getBtnCancel();
+	}
+	
+	@Override
+	public void whenApplyIsClicked(final ClickEvent event) {
+		fireEvent(FormEvent.ClickedComponent.BTN_APPLY);
+	}
+
+	@Override
+	public void whenSaveIsClicked(final ClickEvent event) {
+		fireEvent(FormEvent.ClickedComponent.BTN_SAVE);
+	}
+
+	@Override
+	public void whenCancelIsClicked(final ClickEvent event) {
+		fireEvent(FormEvent.ClickedComponent.BTN_CANCEL);
+	}
+	
+	private void fireEvent(final FormEvent.ClickedComponent clickedComponent ) {
+		final FormEvent<${TargetEntityName}> managerEvent = new FormEvent<${TargetEntityName}>(clickedComponent, modeType, getEntity());
+		getEventBus().fireEventFromSource(managerEvent, this);
+	}
+
+
+   	/**
+   	 * {@inheritDoc}
+	 */
+	@Override 
+	public IsDisplay<${TargetEntityName}> setEntity(final ${TargetEntityName} entity) {
+		Preconditions.checkArgument( entity != null, "The entity cannot be null");
+		
+		currentEntity = Optional.of(entity);
+		${foreach displayFields field}
+		viewFacade.set${field.capitalizedFieldName}(entity.${field.getterFieldPath}());
+		${end}
+		return this;
+	}
+	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	 
+	@Override 
+	public ${TargetEntityName} getEntity() {
+
+		Preconditions.checkArgument( currentEntity.isPresent(), "The currentEntity cannot be null. You called the method %s.setEntity(..) before the getEntity() ?", ${BaseObjectName}Presenter.class.getName() );
+		${foreach displayFields field}
+		currentEntity.get().${field.setterFieldPath}(viewFacade.get${field.capitalizedFieldName}());
+		${end}
+		return currentEntity.get();
+	}
+	
+	@Override
+	protected void onHide() {
+		super.onHide();
+		// Forces the client to set the new entity (prevents using an stalled entity) 
+		currentEntity = Optional.absent();
+	}
+	
+	${if moreFields}
+	@Override
+	public void whenMoreOptionsAnchorIsClicked(final ClickEvent event) {
+		if (IconType.CHEVRON_DOWN == getView().getMoreOptionsAnchor().getIcon()) {
+			getView().getMoreOptionsAnchor().setIcon( IconType.CHEVRON_UP );
+		} else {
+			getView().getMoreOptionsAnchor().setIcon( IconType.CHEVRON_DOWN );
+		}
+	}
+	${end}
+		
+   /**
+	* Setters and getters to manipulate the view content. The idea is to
+	* set the view content using the java types. Internally, the facade
+	* populate the correspondent component. The same for getter: It return
+	* String, booleans, etc. Internally, the facade extract the values from
+	* real view component. Thus, the interface becomes decoupled from the rest
+	* of the application, since the rest of the application need not know which
+	* component is used to render a given information.
+	*/	
+	@SuppressWarnings("CPD-END")
+	public static class ViewFacade {
+		private final MyView view;
+
+		public ViewFacade(final MyView view) {
+			assert view != null : "view cannot be null";
+			
+			this.view = view;
+		}
+	
+	    ${foreach displayFields field}
+	    public ${field.fieldType.javaType} ${field.getter}() {
+	      return ${field.conversionCompToField.left}view.${field.getterForComponentValue}${field.conversionCompToField.right};
+	    }	
+	    
+	    public ViewFacade ${field.setter}( final ${field.fieldType.javaType} ${field.fieldName} ) {
+	      view.${field.setterForComponentValue}(${field.conversionFieldToComp.left}${field.fieldName} ${field.conversionFieldToComp.right});
+	      
+	      return this;
+	    }
+	    ${end}
+	}
+}

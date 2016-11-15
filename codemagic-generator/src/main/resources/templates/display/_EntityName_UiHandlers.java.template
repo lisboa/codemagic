@@ -1,0 +1,17 @@
+package ${package};
+
+import com.gwtplatform.mvp.client.UiHandlers;
+import com.google.gwt.event.dom.client.ClickEvent;
+
+interface ${BaseObjectName}UiHandlers extends UiHandlers {
+
+	void whenApplyIsClicked(ClickEvent event);
+	
+	void whenSaveIsClicked(ClickEvent event);
+	
+	void whenCancelIsClicked(ClickEvent event);
+	
+	${if moreFields}
+	void whenMoreOptionsAnchorIsClicked(ClickEvent event);
+	${end}
+}

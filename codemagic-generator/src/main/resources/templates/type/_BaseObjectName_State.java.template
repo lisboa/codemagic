@@ -1,0 +1,70 @@
+package ${package};
+
+import com.gwtplatform.mvp.client.PresenterWidget;
+import com.google.common.base.Verify;
+import com.google.web.bindery.event.shared.EventBus;
+${if requestParamHolder.params}
+import static codemagic.util.shared.common.SanitizerUtil.sanitize;
+${end}
+import javax.annotation.concurrent.Immutable;
+
+/**
+ * The current ${BaseObjectName} state. Use it to get fresh state. 
+ * Note: The glue is responsible by keep this state updated
+ */
+@Immutable
+public class ${BaseObjectName}State {
+  
+  	private final EventBus eventBus;
+  	
+  	private final PresenterWidget<?> eventSource;
+  	
+    ${foreach requestParamHolder.params p}
+	private final String ${p.param.fieldName};
+	${end}
+	
+	@SuppressWarnings("CPD-START")
+    ${if requestParamHolder.fieldMethodDeclaration}
+	public ${BaseObjectName}State(${requestParamHolder.fieldMethodDeclaration}, final EventBus eventBus, final PresenterWidget<?> eventSource) {
+	    ${foreach requestParamHolder.params p}
+		this.${p.param.fieldName} = sanitize( ${p.param.fieldName} ).trim();
+		${end}
+		this.eventBus = eventBus;
+		
+		this.eventSource = eventSource;
+		
+		${foreach requestParamHolder.params p}${if p.param.required}
+		Verify.verify( !this.${p.param.fieldName}.isEmpty() , "${p.param.fieldName} cannot be null");
+		${end}${end}
+		Verify.verify( this.eventBus != null , "The eventBus cannot be null");
+		
+		Verify.verify( this.eventSource != null , "The eventSource cannot be null");
+	}
+	${else}
+	public ${BaseObjectName}State(final EventBus eventBus, final PresenterWidget<?> eventSource) {
+
+		this.eventBus = eventBus;
+		
+		this.eventSource = eventSource;
+		
+		Verify.verify( this.eventBus != null , "The eventBus cannot be null");
+		
+		Verify.verify( this.eventSource != null , "The eventSource cannot be null");
+	}
+	${end}
+
+	${foreach requestParamHolder.params p}
+	public String ${p.param.getter}() {
+		return this.${p.param.fieldName};
+	}
+	${end}
+		
+	public EventBus getEventBus() {
+		return eventBus;
+	}
+	
+	@SuppressWarnings("CPD-END")
+	public PresenterWidget<?> getEventSource() {
+		return eventSource;
+	}
+}

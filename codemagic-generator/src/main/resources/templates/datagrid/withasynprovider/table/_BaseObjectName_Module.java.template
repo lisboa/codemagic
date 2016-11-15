@@ -1,0 +1,10 @@
+package ${package};
+
+import com.gwtplatform.mvp.client.gin.AbstractPresenterModule;
+
+public class ${BaseObjectName}Module extends AbstractPresenterModule {
+    @Override
+    protected void configure() {
+            bindPresenterWidget(${BaseObjectName}Presenter.class, ${BaseObjectName}Presenter.MyView.class, ${BaseObjectName}View.class);
+    }
+}

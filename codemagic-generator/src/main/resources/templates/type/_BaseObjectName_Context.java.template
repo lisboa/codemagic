@@ -1,0 +1,32 @@
+package ${package};
+
+import com.google.common.base.Preconditions;
+
+import codemagic.util.client.common.ThreadLocal;
+
+public abstract class ${BaseObjectName}Context {
+
+	private static final ThreadLocal<${BaseObjectName}State> thl = new ThreadLocal<${BaseObjectName}State>() {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		protected ${BaseObjectName}State initialValue() {
+			throw new RuntimeException("Please, call the method set() to initialize the context,  before to call get()");
+		}
+	};
+	
+	
+	public static ${BaseObjectName}State get() {
+		return thl.get();
+	}
+	
+	public static void set(final ${BaseObjectName}State state) {
+		Preconditions.checkArgument( state != null , "The state cannot be null");
+		thl.set(state);
+	}
+	
+	public static void remove() {
+		thl.remove();
+	}
+}

@@ -1,0 +1,103 @@
+package ${package};
+
+${foreach displayImports import}
+import ${import};
+${end}
+${if moreFields}
+import org.gwtbootstrap3.client.ui.Anchor;
+${end}
+import com.google.inject.Inject;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.uibinder.client.UiHandler;
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.Form;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.user.client.ui.Widget;
+import com.gwtplatform.mvp.client.ViewWithUiHandlers;
+import com.google.gwt.uibinder.client.UiField;
+
+class ${BaseObjectName}View extends ViewWithUiHandlers<${BaseObjectName}UiHandlers> 
+implements ${BaseObjectName}Presenter.MyView {
+
+    @UiField Button btnApply;
+    
+    @UiField Button btnSave;
+    
+    @UiField Button btnCancel;
+    
+    @UiField ${FormType} ${formName}; 
+    
+    ${if moreFields}
+    @UiField Anchor moreOptionsAnchor;
+    ${end}
+     
+    ${foreach displayFields field}
+    @UiField ${field.componentType.javaType} ${field.componentName};
+    ${end}
+ 
+    
+    interface Binder extends UiBinder<Widget, ${BaseObjectName}View> {
+    }
+
+    @Inject
+    ${BaseObjectName}View(final Binder uiBinder) {
+        initWidget(uiBinder.createAndBindUi(this));
+    }
+    
+    ${foreach displayFields field}
+    @Override
+    public ${field.componentType.javaType} ${field.getterComponent}() {
+    	return ${field.componentName};
+    }
+	${end}
+	
+	@Override
+	public ${FormType} get${FormName}() {
+	  return ${formName};
+	}
+	
+	@SuppressWarnings("CPD-START")
+	@Override
+	public Button getBtnApply() {
+		return btnApply;
+	}
+
+	@Override
+	public Button getBtnSave() {
+		return btnSave;
+	}
+
+	@Override
+	public Button getBtnCancel() {
+		return btnCancel;
+	}
+	
+	@UiHandler("btnApply")
+	public void onApplyClick(final ClickEvent event) {
+		getUiHandlers().whenApplyIsClicked(event);
+	}
+	
+	@UiHandler("btnSave")
+	public void onBtnSaveClick(final ClickEvent event) {
+		getUiHandlers().whenSaveIsClicked(event);
+		
+	}
+	
+	@SuppressWarnings("CPD-END")
+	@UiHandler("btnCancel")
+	public void onCancelClick(final ClickEvent event) {
+		getUiHandlers().whenCancelIsClicked(event);
+	}
+
+	${if moreFields}
+	@UiHandler("moreOptionsAnchor")
+	public void onMoreOptionsAnchorClick(final ClickEvent event) {
+		getUiHandlers().whenMoreOptionsAnchorIsClicked(event);
+	}
+	
+	@Override
+	public Anchor getMoreOptionsAnchor() {
+		return moreOptionsAnchor;
+	}	
+	${end}
+}

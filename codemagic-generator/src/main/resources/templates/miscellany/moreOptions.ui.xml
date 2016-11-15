@@ -1,0 +1,30 @@
+<b:PanelGroup b:id="accordion">
+	<b:Panel>
+		<b:PanelHeader>
+			<b:Heading size="H4">
+				<b:Anchor icon="CHEVRON_DOWN" dataToggle="COLLAPSE"
+					dataParent="#accordion" dataTarget="#collapseOne" text="More options"
+					iconBordered="true" ui:field="moreFieldAnchor" />
+			</b:Heading>
+		</b:PanelHeader>
+		<b:PanelCollapse b:id="collapseOne" ui:field="collapseOne">
+			<b:PanelBody>
+				<b:Form>
+					<b:FormGroup>
+						<b:InlineCheckBox text="Active" ui:field="chkFlgActive"
+							b:id="flgActive" enabled="true" tabIndex="4" />
+					</b:FormGroup>
+					<b:FormGroup>
+						<b:FormLabel showRequiredIndicator="false">Environments</b:FormLabel>
+						<b.html:Div>
+							<b:InlineCheckBox text="Dev" ui:field="chkFlgDev"
+								b:id="flgDev" enabled="true" tabIndex="6" />
+							<b:InlineCheckBox text="Int" ui:field="chkFlgInt"
+								b:id="flgInt" enabled="true" tabIndex="7" />
+						</b.html:Div>
+					</b:FormGroup>
+				</b:Form>
+			</b:PanelBody>
+		</b:PanelCollapse>
+	</b:Panel>
+</b:PanelGroup>
