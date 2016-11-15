@@ -1,2 +1,2 @@
 # codemagic
-Libraries to be reused
+Small libraries with GWT and pure java utilities.
